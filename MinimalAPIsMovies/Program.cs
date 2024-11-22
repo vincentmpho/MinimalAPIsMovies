@@ -81,6 +81,20 @@ app.MapPut("/genres/{id:int}", async (int id, Genre genre, IGenresRepository rep
     return Results.Ok($"Genre with ID {id} was successfully updated.");
 });
 
+app.MapDelete("/genres/{id:int}", async (int id, IGenresRepository repository) =>
+{
+    // Check if the genre with the given ID exists
+    var exists = await repository.Exists(id);
+
+    if (!exists)
+    {
+        return Results.NotFound($"Genre with ID {id} does not exist in the database. Delete failed.");
+    }
+
+    await repository.Delete(id);
+    return Results.Ok("Successfully deleted.");
+});
+
 
 
 //Middlewares Zone-END

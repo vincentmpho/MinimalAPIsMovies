@@ -25,9 +25,16 @@ namespace MinimalAPIsMovies.Repositories
             return createdGenre.Entity.Id;
         }
 
+        public async Task Delete(int id)
+        {
+
+            await _context.Genres.Where(g => g.Id==id).ExecuteDeleteAsync();
+          
+        }
+
         public async Task<bool> Exists(int id)
         {
-            return await _context.Genres.AnyAsync(g => g.Id == id); 
+             return await _context.Genres.AnyAsync(g => g.Id == id); 
         }
 
         public async Task<List<Genre>> GetAll() 

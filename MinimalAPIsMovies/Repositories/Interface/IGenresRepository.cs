@@ -9,5 +9,6 @@ namespace MinimalAPIsMovies.Repositories.Interface
         Task<Genre?> GetById (int id);
         Task<bool> Exists (int id);
         Task Update (Genre genre);
+        Task Delete (int id);
     }
 }
