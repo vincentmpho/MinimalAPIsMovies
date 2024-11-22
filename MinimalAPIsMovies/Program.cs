@@ -38,14 +38,16 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.MapGet("/genres", async (IGenresRepository repository) =>
+var genresEndpoint = app.MapGroup("/genres");
+
+genresEndpoint.MapGet("/", async (IGenresRepository repository) =>
 {
     return await repository.GetAll();
 
 }
 );
 
-app.MapGet("/genres/{id:int}", async (int id, IGenresRepository repository) =>
+genresEndpoint.MapGet("/{id:int}", async (int id, IGenresRepository repository) =>
 {
     var genres = await repository.GetById(id);
 
@@ -59,13 +61,13 @@ app.MapGet("/genres/{id:int}", async (int id, IGenresRepository repository) =>
 });
 
 
-app.MapPost("/genres", async (Genre genre, IGenresRepository repository) =>
+genresEndpoint.MapPost("/", async (Genre genre, IGenresRepository repository) =>
 {
     var id = await repository.Create(genre);
     return Results.Created($"/genres/{id}", genre);
 });
 
-app.MapPut("/genres/{id:int}", async (int id, Genre genre, IGenresRepository repository) =>
+genresEndpoint.MapPut("/{id:int}", async (int id, Genre genre, IGenresRepository repository) =>
 {
     // Check if the genre with the given ID exists
     var exists = await repository.Exists(id);
@@ -81,7 +83,7 @@ app.MapPut("/genres/{id:int}", async (int id, Genre genre, IGenresRepository rep
     return Results.Ok($"Genre with ID {id} was successfully updated.");
 });
 
-app.MapDelete("/genres/{id:int}", async (int id, IGenresRepository repository) =>
+genresEndpoint.MapDelete("/{id:int}", async (int id, IGenresRepository repository) =>
 {
     // Check if the genre with the given ID exists
     var exists = await repository.Exists(id);
