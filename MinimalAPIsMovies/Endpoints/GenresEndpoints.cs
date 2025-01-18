@@ -1,4 +1,5 @@
-﻿using MinimalAPIsMovies.Entites;
+﻿using AutoMapper;
+using MinimalAPIsMovies.Entites;
 using MinimalAPIsMovies.Entites.DTOs;
 using MinimalAPIsMovies.Repositories.Interface;
 
@@ -8,20 +9,16 @@ namespace MinimalAPIsMovies.Endpoints
     {
         public static RouteGroupBuilder MapGenres(this RouteGroupBuilder group)
         {
-            group.MapGet("/", async (IGenresRepository repository) =>
+            group.MapGet("/", async (IGenresRepository repository, IMapper mapper) =>
             {
-                // Fetch all genres and map to GenreDTO
+                // Fetch all genres and map to GenreDTO using AutoMapper
                 var genres = await repository.GetAll();
-                var genreDTOs = genres.Select(genre => new GenreDTO
-                {
-                    Id = genre.Id,
-                    Name = genre.Name
-                }).ToList();
+                var genreDTOs = mapper.Map<List<GenreDTO>>(genres);
 
                 return Results.Ok(genreDTOs);
             });
 
-            group.MapGet("/{id:int}", async (int id, IGenresRepository repository) =>
+            group.MapGet("/{id:int}", async (int id, IGenresRepository repository, IMapper mapper) =>
             {
                 var genre = await repository.GetById(id);
 
@@ -31,37 +28,27 @@ namespace MinimalAPIsMovies.Endpoints
                     return Results.NotFound($"Genre with ID {id} was not found in the database.");
                 }
 
-                // Map to GenreDTO
-                var genreDTO = new GenreDTO
-                {
-                    Id = genre.Id,
-                    Name = genre.Name
-                };
+                // Map to GenreDTO using AutoMapper
+                var genreDTO = mapper.Map<GenreDTO>(genre);
 
                 return Results.Ok(genreDTO);
             });
 
-            group.MapPost("/", async (CreateGenreDTO createGenreDTO, IGenresRepository repository) =>
+            group.MapPost("/", async (CreateGenreDTO createGenreDTO, IGenresRepository repository, IMapper mapper) =>
             {
-                // Map the DTO to the Genre entity
-                var genre = new Genre
-                {
-                    Name = createGenreDTO.Name
-                };
+                // Map the CreateGenreDTO to the Genre entity using AutoMapper
+                var genre = mapper.Map<Genre>(createGenreDTO);
 
                 var id = await repository.Create(genre);
 
-                // Return created Genre as a GenreDTO
-                var genreDTO = new GenreDTO
-                {
-                    Id = id,
-                    Name = genre.Name
-                };
+                // Return created Genre as a GenreDTO using AutoMapper
+                var genreDTO = mapper.Map<GenreDTO>(genre);
+                genreDTO.Id = id;  // Set the generated ID
 
                 return Results.Created($"/genres/{id}", genreDTO);
             });
 
-            group.MapPut("/{id:int}", async (int id, CreateGenreDTO createGenreDTO, IGenresRepository repository) =>
+            group.MapPut("/{id:int}", async (int id, CreateGenreDTO createGenreDTO, IGenresRepository repository, IMapper mapper) =>
             {
                 // Check if the genre with the given ID exists
                 var exists = await repository.Exists(id);
@@ -71,21 +58,14 @@ namespace MinimalAPIsMovies.Endpoints
                     return Results.NotFound($"Genre with ID {id} does not exist in the database. Update failed.");
                 }
 
-                // Map the DTO to the Genre entity
-                var genre = new Genre
-                {
-                    Id = id,
-                    Name = createGenreDTO.Name
-                };
+                // Map the CreateGenreDTO to the Genre entity using AutoMapper
+                var genre = mapper.Map<Genre>(createGenreDTO);
+                genre.Id = id;  // Ensure we set the ID correctly
 
                 await repository.Update(genre);
 
-                // Return updated Genre as a GenreDTO
-                var updatedGenreDTO = new GenreDTO
-                {
-                    Id = genre.Id,
-                    Name = genre.Name
-                };
+                // Return updated Genre as a GenreDTO using AutoMapper
+                var updatedGenreDTO = mapper.Map<GenreDTO>(genre);
 
                 return Results.Ok(updatedGenreDTO);
             });
