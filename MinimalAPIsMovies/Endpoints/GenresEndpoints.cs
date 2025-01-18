@@ -10,20 +10,35 @@ namespace MinimalAPIsMovies.Endpoints
         {
             group.MapGet("/", async (IGenresRepository repository) =>
             {
-                return await repository.GetAll();
+                // Fetch all genres and map to GenreDTO
+                var genres = await repository.GetAll();
+                var genreDTOs = genres.Select(genre => new GenreDTO
+                {
+                    Id = genre.Id,
+                    Name = genre.Name
+                }).ToList();
+
+                return Results.Ok(genreDTOs);
             });
 
             group.MapGet("/{id:int}", async (int id, IGenresRepository repository) =>
             {
-                var genres = await repository.GetById(id);
+                var genre = await repository.GetById(id);
 
                 // Check if the genre is not found
-                if (genres is null)
+                if (genre is null)
                 {
                     return Results.NotFound($"Genre with ID {id} was not found in the database.");
                 }
 
-                return Results.Ok(genres);
+                // Map to GenreDTO
+                var genreDTO = new GenreDTO
+                {
+                    Id = genre.Id,
+                    Name = genre.Name
+                };
+
+                return Results.Ok(genreDTO);
             });
 
             group.MapPost("/", async (CreateGenreDTO createGenreDTO, IGenresRepository repository) =>
@@ -35,7 +50,15 @@ namespace MinimalAPIsMovies.Endpoints
                 };
 
                 var id = await repository.Create(genre);
-                return Results.Created($"/genres/{id}", genre);
+
+                // Return created Genre as a GenreDTO
+                var genreDTO = new GenreDTO
+                {
+                    Id = id,
+                    Name = genre.Name
+                };
+
+                return Results.Created($"/genres/{id}", genreDTO);
             });
 
             group.MapPut("/{id:int}", async (int id, CreateGenreDTO createGenreDTO, IGenresRepository repository) =>
@@ -51,12 +74,20 @@ namespace MinimalAPIsMovies.Endpoints
                 // Map the DTO to the Genre entity
                 var genre = new Genre
                 {
-                    Id = id, 
+                    Id = id,
                     Name = createGenreDTO.Name
                 };
 
                 await repository.Update(genre);
-                return Results.Ok($"Genre with ID {id} was successfully updated.");
+
+                // Return updated Genre as a GenreDTO
+                var updatedGenreDTO = new GenreDTO
+                {
+                    Id = genre.Id,
+                    Name = genre.Name
+                };
+
+                return Results.Ok(updatedGenreDTO);
             });
 
             group.MapDelete("/{id:int}", async (int id, IGenresRepository repository) =>
