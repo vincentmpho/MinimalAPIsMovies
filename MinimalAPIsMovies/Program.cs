@@ -4,6 +4,7 @@ using MinimalAPIsMovies.Endpoints;
 using MinimalAPIsMovies.Entites;
 using MinimalAPIsMovies.Repositories;
 using MinimalAPIsMovies.Repositories.Interface;
+using MinimalAPIsMovies.Utilities;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,7 +24,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddAutoMapper(typeof(Program));
+builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
 
 //Service Zone- END
